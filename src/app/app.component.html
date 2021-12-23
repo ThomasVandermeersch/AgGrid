@@ -1,9 +1,14 @@
 <ag-grid-angular
-    style="width: 1000px; height: 750px;"
+    style="width: 1200px; height: 550px;"
     class="ag-theme-alpine"
     [defaultColDef]="defaultColDef"
-    [rowData]="rowData | async"
+    [rowData]="rowData"
     [columnDefs]="columnDefs"
+    [sideBar]='true'
     rowSelection="multiple"
 >
 </ag-grid-angular>
+
+<!-- <div class="button-group">
+    <button (click)="clearFilters()"> Clear filters ==> not working //to do</button>
+</div> -->
