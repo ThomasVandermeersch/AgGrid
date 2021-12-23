@@ -6,9 +6,10 @@
     [columnDefs]="columnDefs"
     [sideBar]='true'
     rowSelection="multiple"
+    (gridReady)="onGridReady($event)"
 >
 </ag-grid-angular>
 
-<!-- <div class="button-group">
-    <button (click)="clearFilters()"> Clear filters ==> not working //to do</button>
-</div> -->
+<div class="button-group">
+    <button (click)="clearFilters()"> Clear filters</button>
+</div>

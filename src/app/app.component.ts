@@ -12,92 +12,104 @@ import { Observable } from 'rxjs';
 })
 
 export class AppComponent {
-
-    defaultColDef: ColDef = {
-        sortable: true,
-        filter: true
-    };
-
-    columnDefs: ColDef[] = [
-        {headerName: 'Device ID', field: '_id',aggFunc: 'count'},
-        {headerName: 'Device name', field: 'name' },
-        
-        
-        // Team INFORMATION
-        {field: 'team._id',enableRowGroup: true, enablePivot:true},
-        {field: 'team.name',enableRowGroup: true, enablePivot:true},
-        {field: 'team.solution',enableRowGroup: true, enablePivot:true},
-        {field: 'team.status',enableRowGroup: true, enablePivot:true, filter: 'agSetColumnFilter'},
-        {field: 'team.maxDevices',enableRowGroup: true, enablePivot:true, filter: 'agNumberColumnFilter'},
-        {field: 'team.maxUsers',enableRowGroup: true, enablePivot:true, filter: 'agNumberCfolumnFilter'},
-        {field: 'team.level',enableRowGroup: true, enablePivot:true},
+    public gridApi : any
+    public gridColumnApi : any
+    public columnDefs;
+    public defaultColDef;
+    public rowData : any;
 
 
-        
-        {
-            field: 'team.createdAt',
-            enableRowGroup: true, 
-            enablePivot:true,
-            cellRenderer: (data) => {
-                return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+    constructor(private http : HttpClient){
+        this.columnDefs = [
+            {headerName: 'Device ID', field: '_id',aggFunc: 'count'},
+            {headerName: 'Device name', field: 'name' },
+            
+            
+            // Team INFORMATION
+            {field: 'team._id',enableRowGroup: true, enablePivot:true},
+            {field: 'team.solution',enableRowGroup: true, rowGroup: true, enablePivot:true},
+            {field: 'team.name',enableRowGroup: true, rowGroup: true, enablePivot:true},
+            {field: 'team.status',enableRowGroup: true, enablePivot:true, filter: 'agSetColumnFilter'},
+            {field: 'team.maxDevices',enableRowGroup: true, enablePivot:true, filter: 'agNumberColumnFilter'},
+            {field: 'team.maxUsers',enableRowGroup: true, enablePivot:true, filter: 'agNumberCfolumnFilter'},
+            {field: 'team.level',enableRowGroup: true, enablePivot:true},
+
+            
+            {
+                field: 'team.createdAt',
+                enableRowGroup: true, 
+                enablePivot:true,
+                cellRenderer: (data : any) => {
+                    return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+                },
+                sortable:true,
+                filter: 'agDateColumnFilter'
             },
-            sortable:true,
-            filter: 'agDateColumnFilter'
-        },
-        {
-            field: 'team.updatedAt',
-            enableRowGroup: true,
-            enablePivot:true,
-            cellRenderer: (data) => {
-                return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+            {
+                field: 'team.updatedAt',
+                enableRowGroup: true,
+                enablePivot:true,
+                cellRenderer: (data : any) => {
+                    return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+                },
+                sortable:true,
+                filter: 'agDateColumnFilter'
             },
-            sortable:true,
-            filter: 'agDateColumnFilter'
-        },
 
-        
-        
-        {
-            headerName: 'Device createdAt',
-            field: 'createdAt',
-            cellRenderer: (data) => {
-                return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+            
+            
+            {
+                headerName: 'Device createdAt',
+                field: 'createdAt',
+                cellRenderer: (data : any) => {
+                    return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+                },
+                sortable:true,
+                filter: 'agDateColumnFilter'
             },
-            sortable:true,
-            filter: 'agDateColumnFilter'
-        },
-        
-        {
-            headerName: 'Device updatedAt',
-            field: 'updatedAt',
-            cellRenderer: (data) => {
-                return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+            
+            {
+                headerName: 'Device updatedAt',
+                field: 'updatedAt',
+                cellRenderer: (data : any) => {
+                    return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+                },
+                sortable:true,
+                filter: 'agDateColumnFilter'
             },
-            sortable:true,
-            filter: 'agDateColumnFilter'
-        },
 
 
 
-        {headerName: "Device status", field: 'status',enableRowGroup:true, enablePivot:true},
-        {headerName: 'Device Type',field: 'type',enableRowGroup:true,enablePivot:true},
+            {headerName: "Device status", field: 'status',enableRowGroup:true, enablePivot:true, pivot : true},
+            {headerName: 'Device Type',field: 'type',enableRowGroup:true,enablePivot:true},
+        ];
 
-    ]
+        this.defaultColDef = {
+            sortable: true,
+            filter: true
+        };
 
+    }
 
-    rowData : any
-    constructor(private http: HttpClient) {
+    clearFilters() {
+        this.gridApi.setFilterModel(null);
+    }
+
+    onGridReady(params : any) {
+        this.gridApi = params.api;
+        this.gridColumnApi = params.columnApi;
+
         const httpOptions = {
             headers: new HttpHeaders({
               'Content-Type':  'application/json',
-              'Authorization': 'Basic ' + btoa('61c302c2d7af0d00112681a3:ten9rs4mj1go6h8tjt4')
+              'Authorization': 'Basic ' + btoa('username:password')
             }),
             params : {
                 limit : 5000,
                 status : "all"
             }
           };
-        this.http.get<any>('https://report.iotfactory.eu/api/alldevices', httpOptions).subscribe(devices=>{
+          this.http.get<any>('https://report.iotfactory.eu/api/alldevices', httpOptions).subscribe(devices=>{
             const data = devices.data
             console.log("Total import : " + data.length)
             for (var device of data){            
@@ -107,19 +119,118 @@ export class AppComponent {
                 device.team.updatedAt = new Date(device.team.updatedAt).getTime()
             };
             
-            this.rowData = data
+            params.api.setRowData(data);
         })
-
-        //this.rowData = this.http.get<any[]>('http://localhost:8081/devices')
     }
+}
 
-    clearFilters(){
-        console.log("Clear Filters pressed")
-    }
+    // defaultColDef: ColDef = {
+    //     sortable: true,
+    //     filter: true
+    // };
+
+    // columnDefs: ColDef[] = [
+        // {headerName: 'Device ID', field: '_id',aggFunc: 'count'},
+        // {headerName: 'Device name', field: 'name' },
+        
+        
+        // // Team INFORMATION
+        // {field: 'team._id',enableRowGroup: true, enablePivot:true},
+        // {field: 'team.name',enableRowGroup: true, enablePivot:true},
+        // {field: 'team.solution',enableRowGroup: true, enablePivot:true},
+        // {field: 'team.status',enableRowGroup: true, enablePivot:true, filter: 'agSetColumnFilter'},
+        // {field: 'team.maxDevices',enableRowGroup: true, enablePivot:true, filter: 'agNumberColumnFilter'},
+        // {field: 'team.maxUsers',enableRowGroup: true, enablePivot:true, filter: 'agNumberCfolumnFilter'},
+        // {field: 'team.level',enableRowGroup: true, enablePivot:true},
+
+
+        
+        // {
+        //     field: 'team.createdAt',
+        //     enableRowGroup: true, 
+        //     enablePivot:true,
+        //     cellRenderer: (data) => {
+        //         return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+        //     },
+        //     sortable:true,
+        //     filter: 'agDateColumnFilter'
+        // },
+        // {
+        //     field: 'team.updatedAt',
+        //     enableRowGroup: true,
+        //     enablePivot:true,
+        //     cellRenderer: (data) => {
+        //         return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+        //     },
+        //     sortable:true,
+        //     filter: 'agDateColumnFilter'
+        // },
+
+        
+        
+        // {
+        //     headerName: 'Device createdAt',
+        //     field: 'createdAt',
+        //     cellRenderer: (data) => {
+        //         return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+        //     },
+        //     sortable:true,
+        //     filter: 'agDateColumnFilter'
+        // },
+        
+        // {
+        //     headerName: 'Device updatedAt',
+        //     field: 'updatedAt',
+        //     cellRenderer: (data) => {
+        //         return data.value ? (new Date(data.value)).toLocaleDateString() : '';
+        //     },
+        //     sortable:true,
+        //     filter: 'agDateColumnFilter'
+        // },
+
+
+
+        // {headerName: "Device status", field: 'status',enableRowGroup:true, enablePivot:true},
+        // {headerName: 'Device Type',field: 'type',enableRowGroup:true,enablePivot:true},
+
+    // ]
+
+
+    // rowData : any
+    // constructor(private http: HttpClient) {
+    //     const httpOptions = {
+    //         headers: new HttpHeaders({
+    //           'Content-Type':  'application/json',
+    //           'Authorization': 'Basic ' + btoa('61c302c2d7af0d00112681a3:ten9rs4mj1go6h8tjt4')
+    //         }),
+    //         params : {
+    //             limit : 5000,
+    //             status : "all"
+    //         }
+    //       };
+    //     this.http.get<any>('https://report.iotfactory.eu/api/alldevices', httpOptions).subscribe(devices=>{
+    //         const data = devices.data
+    //         console.log("Total import : " + data.length)
+    //         for (var device of data){            
+    //             device.createdAt = new Date(device.createdAt).getTime()
+    //             device.updatedAt = new Date(device.updatedAt).getTime()
+    //             device.team.createdAt = new Date(device.team.createdAt).getTime()
+    //             device.team.updatedAt = new Date(device.team.updatedAt).getTime()
+    //         };
+            
+    //         this.rowData = data
+    //     })
+
+    //     //this.rowData = this.http.get<any[]>('http://localhost:8081/devices')
+    // }
+
+    // clearFilters(){
+    //     console.log("Clear Filters pressed")
+    // }
 
     // onGridReady(params) {
     //     this.gridApi = params.api
     //     this.gridColumnApi = params.columnApi
     // }
-}
+// }
  
